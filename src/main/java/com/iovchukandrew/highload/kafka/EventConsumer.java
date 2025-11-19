@@ -18,14 +18,14 @@ public class EventConsumer {
             @Header(KafkaHeaders.RECEIVED_KEY) String key
     ) {
         // Обогащение данных (например, информация о пользователе из PostgreSQL)
-        User user = userRepository.findById(event.getUserId());
+        /*User user = userRepository.findById(event.getUserId());
         event.setUserSegment(user.getSegment());
 
         // Сохранение в Cassandra
         eventRepository.save(event);
 
         // Обновление счетчиков в Redis
-        redisTemplate.opsForValue().increment("product:views:" + event.getProductId());
+        redisTemplate.opsForValue().increment("product:views:" + event.getProductId());*/
     }
 
 }
