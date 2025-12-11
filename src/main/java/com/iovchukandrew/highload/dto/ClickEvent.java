@@ -1,6 +1,5 @@
 package com.iovchukandrew.highload.dto;
 
-
 import ch.qos.logback.core.joran.sanity.Pair;
 import lombok.Builder;
 import lombok.Value;

@@ -3,7 +3,7 @@ services:
     build: .
     container_name: high-load-app
     ports:
-      - 8080:8080
+      - 8081:8081
     depends_on:
       - kafka-ui
       - kafka1
@@ -11,18 +11,15 @@ services:
       - kafka3
 
   kafka1:
-    image: confluentinc/cp-kafka:7.8.0
+    image: ${KAFKA_IMAGE}:${KAFKA_IMAGE_VERSION}
     hostname: kafka1
     container_name: kafka1
-    ports:
-      - 9092:9092
-      - 9093:9093
     environment:
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_NODE_ID: 1
-      KAFKA_BROKER_ID: 1
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://kafka1:9092,CONTROLLER://kafka1:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka1:9092'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
@@ -32,21 +29,18 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
     volumes:
-      - ./kafka1/data:/var/lib/kafka/data
+      - kafka1-data:/var/lib/kafka/data
 
   kafka2:
-    image: confluentinc/cp-kafka:7.8.0
+    image: ${KAFKA_IMAGE}:${KAFKA_IMAGE_VERSION}
     hostname: kafka2
     container_name: kafka2
-    ports:
-      - 9094:9092
-      - 9095:9093
     environment:
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_NODE_ID: 2
-      KAFKA_BROKER_ID: 2
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://kafka2:9092,CONTROLLER://kafka2:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka2:9092'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
@@ -56,21 +50,18 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
     volumes:
-      - ./kafka2/data:/var/lib/kafka/data
+      - kafka2-data:/var/lib/kafka/data
 
   kafka3:
-    image: confluentinc/cp-kafka:7.8.0
+    image: ${KAFKA_IMAGE}:${KAFKA_IMAGE_VERSION}
     hostname: kafka3
     container_name: kafka3
-    ports:
-      - 9096:9092
-      - 9097:9093
     environment:
+      CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_NODE_ID: 3
-      KAFKA_BROKER_ID: 3
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka1:9093,2@kafka2:9093,3@kafka3:9093'
-      KAFKA_LISTENERS: 'PLAINTEXT://kafka3:9092,CONTROLLER://kafka3:9093'
+      KAFKA_LISTENERS: 'PLAINTEXT://:9092,CONTROLLER://:9093'
       KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://kafka3:9092'
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT'
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
@@ -80,17 +71,22 @@ services:
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
     volumes:
-      - ./kafka3/data:/var/lib/kafka/data
+      - kafka3-data:/var/lib/kafka/data
 
   kafka-ui:
     image: provectuslabs/kafka-ui:v0.7.2
     container_name: kafka-ui
     ports:
-      - 8000:8000
+      - 8080:8080
     depends_on:
       - kafka1
       - kafka2
       - kafka3
     environment:
-      KAFKA_CLUSTERS_0_NAME: local
-      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      KAFKA_CLUSTERS_0_NAME: 'local'
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092,kafka2:9092,kafka3:9092'
+
+volumes:
+  kafka1-data:
+  kafka2-data:
+  kafka3-data:

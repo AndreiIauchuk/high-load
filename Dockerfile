@@ -10,7 +10,7 @@ COPY src ./src
 RUN mvn clean package -DskipTests
 
 # ---------- Step 2: Run ----------
-FROM openjdk:25-jdk-slim
+FROM openjdk:26-ea-25-jdk-slim
 
 WORKDIR /app
 
