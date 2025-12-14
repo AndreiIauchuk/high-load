@@ -1,13 +1,16 @@
 package com.iovchukandrew.highload.dto;
 
 import lombok.Builder;
+import lombok.EqualsAndHashCode;
 import lombok.Value;
+import lombok.experimental.SuperBuilder;
+import lombok.extern.jackson.Jacksonized;
 
+@Jacksonized
 @Value
-@Builder
-public class PurchaseEvent {
-    String userId;
-    String sessionId;
+@SuperBuilder
+@EqualsAndHashCode(callSuper = true)
+public class PurchaseEvent extends Event {
     String orderId;
     double totalAmount;
     String currency;

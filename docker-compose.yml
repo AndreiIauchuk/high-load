@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    container_name: high-load-app
+    container_name: app
     ports:
       - 8081:8081
     depends_on:
@@ -14,6 +14,12 @@ services:
     image: ${KAFKA_IMAGE}:${KAFKA_IMAGE_VERSION}
     hostname: kafka1
     container_name: kafka1
+    healthcheck:
+      test: [ "CMD", "/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "localhost:9092" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
     environment:
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_NODE_ID: 1
@@ -25,9 +31,12 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 3000
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
     volumes:
       - kafka1-data:/var/lib/kafka/data
 
@@ -35,6 +44,12 @@ services:
     image: ${KAFKA_IMAGE}:${KAFKA_IMAGE_VERSION}
     hostname: kafka2
     container_name: kafka2
+    healthcheck:
+      test: [ "CMD", "/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "localhost:9092" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
     environment:
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_NODE_ID: 2
@@ -46,9 +61,12 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 3000
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
     volumes:
       - kafka2-data:/var/lib/kafka/data
 
@@ -56,6 +74,12 @@ services:
     image: ${KAFKA_IMAGE}:${KAFKA_IMAGE_VERSION}
     hostname: kafka3
     container_name: kafka3
+    healthcheck:
+      test: [ "CMD", "/opt/kafka/bin/kafka-broker-api-versions.sh", "--bootstrap-server", "localhost:9092" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 40s
     environment:
       CLUSTER_ID: 'MkU3OEVBNTcwNTJENDM2Qk'
       KAFKA_NODE_ID: 3
@@ -67,9 +91,12 @@ services:
       KAFKA_CONTROLLER_LISTENER_NAMES: 'CONTROLLER'
       KAFKA_INTER_BROKER_LISTENER_NAME: 'PLAINTEXT'
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
-      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
       KAFKA_DEFAULT_REPLICATION_FACTOR: 3
       KAFKA_MIN_INSYNC_REPLICAS: 2
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 3000
+      KAFKA_LOG_RETENTION_HOURS: 168
+      KAFKA_LOG_SEGMENT_BYTES: 1073741824
     volumes:
       - kafka3-data:/var/lib/kafka/data
 
@@ -85,8 +112,42 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: 'local'
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka1:9092,kafka2:9092,kafka3:9092'
+    volumes:
+      - kafka-ui-data:/opt/kafka-ui-data
+
+  kafka-init:
+    image: ${KAFKA_IMAGE}:${KAFKA_IMAGE_VERSION}
+    container_name: kafka-init
+    depends_on:
+      kafka1:
+        condition: service_healthy
+      kafka2:
+        condition: service_healthy
+      kafka3:
+        condition: service_healthy
+    command: |
+      bash -c '
+        echo 'All brokers are available. Creating topics...'
+
+        /opt/kafka/bin/kafka-topics.sh \
+        --create \
+        --topic page-view-events \
+        --partitions 6 \
+        --replication-factor 3 \
+        --config min.insync.replicas=2 \
+        --config retention.ms=604800000 \
+        --bootstrap-server kafka1:9092 \
+        --if-not-exists
+      
+        echo '=== Created topics ==='
+        /opt/kafka/bin/kafka-topics.sh --list --bootstrap-server kafka1:9092
+      
+        echo '=== Topic details ==='
+        /opt/kafka/bin/kafka-topics.sh --describe --bootstrap-server kafka1:9092
+      '
 
 volumes:
   kafka1-data:
   kafka2-data:
   kafka3-data:
+  kafka-ui-data:

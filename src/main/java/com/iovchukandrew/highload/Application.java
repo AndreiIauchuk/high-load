@@ -1,5 +1,6 @@
-package com.iovchukandrew.highload.app;
+package com.iovchukandrew.highload;
 
+import com.iovchukandrew.highload.config.ApplicationConfig;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Import;

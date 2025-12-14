@@ -10,6 +10,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.listener.ContainerProperties;
+import org.springframework.kafka.support.serializer.JsonSerializer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -26,7 +27,7 @@ public class KafkaConsumerConfig {
         props.put(BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
         props.put(GROUP_ID_CONFIG, groupId);
         props.put(KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(VALUE_DESERIALIZER_CLASS_CONFIG, JsonSerializer.class);
         props.put(AUTO_OFFSET_RESET_CONFIG, "earliest");
         props.put(ENABLE_AUTO_COMMIT_CONFIG, false);
         return new DefaultKafkaConsumerFactory<>(props);
